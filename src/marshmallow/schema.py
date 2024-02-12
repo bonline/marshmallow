@@ -623,8 +623,11 @@ class BaseSchema(base.SchemaABC):
 
         .. versionadded:: 1.1.0
         """
-        _, errors = self._do_load(data, many, partial=partial, postprocess=False)
-        return errors
+        try:
+            self._do_load(data, many, partial=partial, postprocess=False)
+        except ValidationError as err:
+            return err.normalized_messages()
+        return {}
 
     ##### Private Helpers #####
 
@@ -707,7 +710,7 @@ class BaseSchema(base.SchemaABC):
             self.handle_error(exc, data)
             raise exc
 
-        return result, errors
+        return result
 
     def _normalize_nested_options(self):
         """Apply then flatten nested schema options"""
